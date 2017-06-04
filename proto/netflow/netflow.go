@@ -1,6 +1,7 @@
 package netflow
 
 import (
+	"errors"
 	"fmt"
 	"net"
 )
@@ -26,7 +27,10 @@ type Records struct {
 	Padding []byte
 }
 type Record struct {
-	FieldValue []byte
+	Value       []byte
+	Type        uint16
+	Length      uint16
+	Description string
 }
 type Template struct {
 	Id         uint16
@@ -38,6 +42,7 @@ type Field struct {
 	Length uint16
 }
 
+// used as template cache
 var TemplateTable = make(map[string]map[uint16]*Template)
 
 func Get(p []byte, addr *net.UDPAddr) *Netflow {
@@ -71,35 +76,33 @@ func Getv9(nf *Netflow, addr *net.UDPAddr, p []byte) {
 	// payload starts at the beginning of the first FlowSet
 	payload := p[20:]
 	var count uint16 = 0
-	fmt.Println("\nheader record count: ", nf.Count)
 	for count < nf.Count {
 		fs := new(FlowSet)
-		fmt.Println("len paylod: ", len(payload))
 		fs.Id = uint16(payload[0])<<8 + uint16(payload[1])
 		fs.Length = uint16(payload[2])<<8 + uint16(payload[3])
 
 		switch {
 		case fs.Id == 0:
-			fmt.Println("is template")
 			GetTemplates(nf, fs, payload[4:], &count, addr)
-			fmt.Println("count: ", count)
 			payload = payload[fs.Length:]
 			continue
 		case fs.Id > 255:
-			fmt.Println("is data")
-			Getv9Data(nf, fs, payload, &count, addr)
-			fmt.Println("count: ", count)
+			err := Getv9Data(nf, fs, payload, &count, addr)
 			payload = payload[fs.Length:]
 			continue
 		}
-		fmt.Println("is something else")
 		count = nf.Count
 		payload = payload[fs.Length:]
 	}
 }
 
-func Getv9Data(nf *Netflow, fs *FlowSet, payload []byte, count *uint16, addr *net.UDPAddr) {
-	*count = nf.Count
+func Getv9Data(nf *Netflow, fs *FlowSet, payload []byte, count *uint16, addr *net.UDPAddr) error {
+	// payload starts at beginning of first data record
+	ip := addr.IP.String()
+	// return immediately if no template for the FlowSet Id exists
+	if _, ok := TemplateTable[ip][fs.Id]; !ok {
+		return errors.New(fmt.Sprintf("Haven't seen NF9 template for data flowset from host %v with Id %v yet", ip, fs.Id))
+	}
 }
 
 func GetTemplates(nf *Netflow, fs *FlowSet, payload []byte, count *uint16, addr *net.UDPAddr) {
