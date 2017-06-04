@@ -6,6 +6,7 @@ import (
 	"net"
 	"os"
 
+	"github.com/davecgh/go-spew/spew"
 	"github.com/jesk78/anyflow/proto/netflow"
 )
 
@@ -58,7 +59,8 @@ func main() {
 			switch p.Proto {
 			// netflow v9 packet processing
 			case "nf9":
-				nf := netflow.Get(p.Raw, p.Saddr)
+				//nf := netflow.Get(p.Raw, p.Saddr)
+				netflow.Get(p.Raw, p.Saddr)
 
 				// Debugging
 				//fmt.Printf("Proto: %v\nSaddr: %v\nVersion: %v\nCount: %v\nUptime: %v\n"+
@@ -69,6 +71,8 @@ func main() {
 				//	"Template Count: %v\n-------\n",
 				//	nf.FlowSet.Id, nf.FlowSet.Length, nf.Template.Id,
 				//	nf.Template.FieldCount)
+
+				spew.Dump(netflow.TemplateTable)
 			}
 		}
 	}

@@ -1,8 +1,8 @@
 package netflow
 
 import (
+	"fmt"
 	"net"
-	//"github.com/davecgh/go-spew/spew"
 )
 
 type Netflow struct {
@@ -12,22 +12,27 @@ type Netflow struct {
 	UnixSecs  uint32
 	Sequence  uint32
 	SourceId  uint32
-	FlowSet   FlowSet
-	Field     Field
-	Template  Template
+	FlowSet   []FlowSet
 }
 
 type FlowSet struct {
-	Id     uint16
-	Length uint16
+	Id       uint16
+	Length   uint16
+	Template []Template
+	Data     Records
 }
-
+type Records struct {
+	Record  []Record
+	Padding []byte
+}
+type Record struct {
+	FieldValue []byte
+}
 type Template struct {
 	Id         uint16
 	FieldCount uint16
 	Fields     []Field
 }
-
 type Field struct {
 	Type   uint16
 	Length uint16
@@ -39,12 +44,12 @@ func Get(p []byte, addr *net.UDPAddr) *Netflow {
 	nf := new(Netflow)
 	version := uint16(p[0])<<8 + uint16(p[1])
 	if version == 9 {
-		Get9(nf, addr, p)
+		Getv9(nf, addr, p)
 	}
 	return nf
 }
 
-func Get9(nf *Netflow, addr *net.UDPAddr, p []byte) {
+func Getv9(nf *Netflow, addr *net.UDPAddr, p []byte) {
 	// version
 	nf.Version = uint16(p[0])<<8 + uint16(p[1])
 	// count
@@ -61,51 +66,62 @@ func Get9(nf *Netflow, addr *net.UDPAddr, p []byte) {
 	// sourceid
 	nf.SourceId = uint32(p[16])<<24 + uint32(p[17])<<16 +
 		uint32(p[18])<<8 + uint32(p[19])
-	nf.FlowSet.Id = uint16(p[20])<<8 + uint16(p[21])
-	// check for FlowSet ID
-	if nf.FlowSet.Id == 0 {
-		// is Template FlowSet
-		GetTemplate(nf, addr, p)
-	}
-	if nf.FlowSet.Id > 255 {
-		Get9Data(nf, addr, p)
+
+	// loop through FlowSets
+	// payload starts at the beginning of the first FlowSet
+	payload := p[20:]
+	var count uint16 = 0
+	for count < nf.Count {
+		fs := new(FlowSet)
+		fmt.Println(len(payload))
+		fs.Id = uint16(payload[0])<<8 + uint16(payload[1])
+		fs.Length = uint16(payload[2])<<8 + uint16(payload[3])
+
+		// check for FlowSet ID
+		switch {
+		case fs.Id == '0':
+			// Template FlowSet
+			GetTemplates(nf, fs, payload[4:], &count, addr)
+		case fs.Id > 255:
+			// Data FlowSet
+			// only to skip panic at the moment
+			Getv9Data(nf, fs, payload, &count, addr)
+		}
+		payload = payload[fs.Length:]
 	}
 }
 
-func Get9Data(nf *Netflow, addr *net.UDPAddr, p []byte) {
+func Getv9Data(nf *Netflow, fs *FlowSet, payload []byte, count *uint16, addr *net.UDPAddr) {
 
 }
 
-func GetTemplate(nf *Netflow, addr *net.UDPAddr, p []byte) {
-	nf.FlowSet.Length = uint16(p[22])<<8 + uint16(p[23])
-	nf.Template.Id = uint16(p[24])<<8 + uint16(p[25])
-	nf.Template.FieldCount = uint16(p[26])<<8 + uint16(p[27])
+func GetTemplates(nf *Netflow, fs *FlowSet, payload []byte, count *uint16, addr *net.UDPAddr) {
+	// payload starts at beginning of the first template
 
 	ip := addr.IP.String()
+	// template starting byte from payload
+	ts := uint16(0)
+	// loop through Templates
+	for ts < fs.Length {
+		t := new(Template)
 
-	fields := make([]Field, nf.Template.FieldCount)
+		t.Id = uint16(payload[ts+0])<<8 + uint16(payload[ts+1])
+		t.FieldCount = uint16(payload[ts+2])<<8 + uint16(payload[ts+3])
+		t.Fields = make([]Field, t.FieldCount)
 
-	template := &Template{
-		Id:         nf.Template.Id,
-		FieldCount: nf.Template.FieldCount,
-		Fields:     fields,
-	}
-
-	if TemplateTable[ip] == nil {
-		TemplateTable[ip] = make(map[uint16]*Template)
-	}
-	TemplateTable[ip][nf.Template.Id] = template
-
-	fieldsoffset := 28 + (4 * nf.Template.FieldCount)
-	payload := p[28:fieldsoffset]
-
-	i := 0
-	for c := 0; c < len(payload)-1; c += 4 {
-		fields[i] = Field{
-			Type:   uint16(payload[c])<<8 + uint16(payload[c+1]),
-			Length: uint16(payload[c+2])<<8 + uint16(payload[c+3]),
+		if TemplateTable[ip] == nil {
+			TemplateTable[ip] = make(map[uint16]*Template)
 		}
-		i++
+		TemplateTable[ip][t.Id] = t
+
+		offset := ts + (4 * t.FieldCount)
+		for i := 0; ts < offset; ts += 4 {
+			t.Fields[i] = Field{
+				Type:   uint16(payload[ts+4])<<8 + uint16(payload[ts+5]),
+				Length: uint16(payload[ts+6])<<8 + uint16(payload[ts+7]),
+			}
+			i++
+		}
+		*count++
 	}
-	//spew.Dump(TemplateTable)
 }
