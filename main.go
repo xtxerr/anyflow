@@ -6,7 +6,6 @@ import (
 	"net"
 	"os"
 
-	"github.com/davecgh/go-spew/spew"
 	"github.com/jesk78/anyflow/proto/netflow"
 )
 
@@ -72,7 +71,7 @@ func main() {
 				//	nf.FlowSet.Id, nf.FlowSet.Length, nf.Template.Id,
 				//	nf.Template.FieldCount)
 
-				spew.Dump(netflow.TemplateTable)
+				//spew.Dump(netflow.TemplateTable)
 			}
 		}
 	}

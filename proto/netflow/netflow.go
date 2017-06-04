@@ -71,57 +71,70 @@ func Getv9(nf *Netflow, addr *net.UDPAddr, p []byte) {
 	// payload starts at the beginning of the first FlowSet
 	payload := p[20:]
 	var count uint16 = 0
+	fmt.Println("\nheader record count: ", nf.Count)
 	for count < nf.Count {
 		fs := new(FlowSet)
-		fmt.Println(len(payload))
+		fmt.Println("len paylod: ", len(payload))
 		fs.Id = uint16(payload[0])<<8 + uint16(payload[1])
 		fs.Length = uint16(payload[2])<<8 + uint16(payload[3])
 
-		// check for FlowSet ID
 		switch {
-		case fs.Id == '0':
-			// Template FlowSet
+		case fs.Id == 0:
+			fmt.Println("is template")
 			GetTemplates(nf, fs, payload[4:], &count, addr)
+			fmt.Println("count: ", count)
+			payload = payload[fs.Length:]
+			continue
 		case fs.Id > 255:
-			// Data FlowSet
-			// only to skip panic at the moment
+			fmt.Println("is data")
 			Getv9Data(nf, fs, payload, &count, addr)
+			fmt.Println("count: ", count)
+			payload = payload[fs.Length:]
+			continue
 		}
+		fmt.Println("is something else")
+		count = nf.Count
 		payload = payload[fs.Length:]
 	}
 }
 
 func Getv9Data(nf *Netflow, fs *FlowSet, payload []byte, count *uint16, addr *net.UDPAddr) {
-
+	*count = nf.Count
 }
 
 func GetTemplates(nf *Netflow, fs *FlowSet, payload []byte, count *uint16, addr *net.UDPAddr) {
 	// payload starts at beginning of the first template
-
 	ip := addr.IP.String()
-	// template starting byte from payload
+	// ts = template starting byte from payload
 	ts := uint16(0)
-	// loop through Templates
-	for ts < fs.Length {
+	// loop through Templates (subtracting 4 bytes for the FlowSet header)
+	for ts < (fs.Length - 4) {
 		t := new(Template)
 
 		t.Id = uint16(payload[ts+0])<<8 + uint16(payload[ts+1])
 		t.FieldCount = uint16(payload[ts+2])<<8 + uint16(payload[ts+3])
 		t.Fields = make([]Field, t.FieldCount)
+		// set ts + 4 bytes for template ID and Count header
+		ts += 4
 
 		if TemplateTable[ip] == nil {
 			TemplateTable[ip] = make(map[uint16]*Template)
 		}
 		TemplateTable[ip][t.Id] = t
 
+		fmt.Println("template id: ", t.Id)
+		fmt.Println("template fieldcount: ", t.FieldCount)
+
 		offset := ts + (4 * t.FieldCount)
 		for i := 0; ts < offset; ts += 4 {
 			t.Fields[i] = Field{
-				Type:   uint16(payload[ts+4])<<8 + uint16(payload[ts+5]),
-				Length: uint16(payload[ts+6])<<8 + uint16(payload[ts+7]),
+				Type:   uint16(payload[ts])<<8 + uint16(payload[ts+1]),
+				Length: uint16(payload[ts+2])<<8 + uint16(payload[ts+3]),
 			}
 			i++
 		}
 		*count++
+		fmt.Println("fields ", t.Fields)
+		fmt.Println("ip: ", ip)
 	}
 }
