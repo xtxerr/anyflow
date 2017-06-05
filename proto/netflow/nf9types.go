@@ -127,3 +127,39 @@ const (
 	NPROBE_APPL_LATENCY_SEC      uint16 = 57558
 	NPROBE_APPL_LATENCY_USEC     uint16 = 57559
 )
+
+type Netflow struct {
+	Version   uint16
+	Count     uint16
+	SysUptime uint32
+	UnixSecs  uint32
+	Sequence  uint32
+	SourceId  uint32
+	FlowSet   []FlowSet
+}
+type FlowSet struct {
+	Id       uint16
+	Length   uint16
+	Template []Template
+	Data     []Record
+	Padding  []byte
+}
+type Record struct {
+	Values  []Value
+	Padding []byte
+}
+type Value struct {
+	Value       []byte
+	Type        uint16
+	Length      uint16
+	Description string
+}
+type Template struct {
+	Id         uint16
+	FieldCount uint16
+	Fields     []Field
+}
+type Field struct {
+	Type   uint16
+	Length uint16
+}

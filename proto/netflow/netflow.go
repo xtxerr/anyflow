@@ -6,55 +6,22 @@ import (
 	"net"
 )
 
-type Netflow struct {
-	Version   uint16
-	Count     uint16
-	SysUptime uint32
-	UnixSecs  uint32
-	Sequence  uint32
-	SourceId  uint32
-	FlowSet   []FlowSet
-}
-
-type FlowSet struct {
-	Id       uint16
-	Length   uint16
-	Template []Template
-	Data     Records
-}
-type Records struct {
-	Record  []Record
-	Padding []byte
-}
-type Record struct {
-	Value       []byte
-	Type        uint16
-	Length      uint16
-	Description string
-}
-type Template struct {
-	Id         uint16
-	FieldCount uint16
-	Fields     []Field
-}
-type Field struct {
-	Type   uint16
-	Length uint16
-}
-
 // used as template cache
 var TemplateTable = make(map[string]map[uint16]*Template)
 
-func Get(p []byte, addr *net.UDPAddr) *Netflow {
+func Get(p []byte, addr *net.UDPAddr) (*Netflow, error) {
 	nf := new(Netflow)
 	version := uint16(p[0])<<8 + uint16(p[1])
 	if version == 9 {
-		Getv9(nf, addr, p)
+		err := Getv9(nf, addr, p)
+		if err != nil {
+			return nf, err
+		}
 	}
-	return nf
+	return nf, nil
 }
 
-func Getv9(nf *Netflow, addr *net.UDPAddr, p []byte) {
+func Getv9(nf *Netflow, addr *net.UDPAddr, p []byte) error {
 	// version
 	nf.Version = uint16(p[0])<<8 + uint16(p[1])
 	// count
@@ -77,41 +44,90 @@ func Getv9(nf *Netflow, addr *net.UDPAddr, p []byte) {
 	payload := p[20:]
 	var count uint16 = 0
 	for count < nf.Count {
+		if len(payload) <= 4 {
+			return errors.New("No payload in flowset")
+		}
 		fs := new(FlowSet)
 		fs.Id = uint16(payload[0])<<8 + uint16(payload[1])
 		fs.Length = uint16(payload[2])<<8 + uint16(payload[3])
 
 		switch {
+		// Temlate FlowSet Id
 		case fs.Id == 0:
-			GetTemplates(nf, fs, payload[4:], &count, addr)
+			err := GetTemplates(nf, fs, payload[4:], &count, addr)
+			if err != nil {
+				return err
+			}
 			payload = payload[fs.Length:]
 			continue
+		// Data FlowSet Id
 		case fs.Id > 255:
 			err := Getv9Data(nf, fs, payload, &count, addr)
+			if err != nil {
+				return err
+			}
 			payload = payload[fs.Length:]
 			continue
 		}
-		count = nf.Count
-		payload = payload[fs.Length:]
+		// in case the FlowSet Id is not defined here, the packet is complete skipped
+		return nil
 	}
+	return nil
 }
 
 func Getv9Data(nf *Netflow, fs *FlowSet, payload []byte, count *uint16, addr *net.UDPAddr) error {
-	// payload starts at beginning of first data record
+	// we need the sender IP for template cache lookup
 	ip := addr.IP.String()
 	// return immediately if no template for the FlowSet Id exists
-	if _, ok := TemplateTable[ip][fs.Id]; !ok {
-		return errors.New(fmt.Sprintf("Haven't seen NF9 template for data flowset from host %v with Id %v yet", ip, fs.Id))
+	t, ok := TemplateTable[ip][fs.Id]
+	if !ok {
+		return fmt.Errorf(
+			"Haven't seen NF9 template for data flowset from host %v with Id %v yet",
+			ip, fs.Id)
 	}
+	if len(payload) <= 4 {
+		return errors.New("No payload in data")
+	}
+	// byte size of one complete record with all values
+	var size int
+	for f := range t.Fields {
+		size += f.Length
+	}
+	// ds = data starting byte from payload
+	ds := uint16(0)
+	// payload length of data without FlowSet header
+	length := fs.Length - 4
+	// loop through records
+	for ds < (fs.Length - 4) {
+		// check if payload left is large enough for possible records
+		if size >= (length - ds) {
+			// create Record with length of defined types in template
+			r = make([]Record, len(t.Fields))
+
+			for f := range t.Fields {
+				v := new(Value)
+				v.Value = payload[ds:f.Length]
+				v.Type = payload[ds:f.Type]
+				v.Length = f.Length
+				r = append(r, v)
+			}
+		}
+	}
+	return nil
 }
 
-func GetTemplates(nf *Netflow, fs *FlowSet, payload []byte, count *uint16, addr *net.UDPAddr) {
-	// payload starts at beginning of the first template
+func GetTemplates(nf *Netflow, fs *FlowSet, payload []byte, count *uint16, addr *net.UDPAddr) error {
+	// we need the sender IP for template cache lookup
 	ip := addr.IP.String()
 	// ts = template starting byte from payload
 	ts := uint16(0)
 	// loop through Templates (subtracting 4 bytes for the FlowSet header)
 	for ts < (fs.Length - 4) {
+
+		if len(payload) <= 4 {
+			return errors.New("No payload in template")
+		}
+
 		t := new(Template)
 
 		t.Id = uint16(payload[ts+0])<<8 + uint16(payload[ts+1])
@@ -130,6 +146,9 @@ func GetTemplates(nf *Netflow, fs *FlowSet, payload []byte, count *uint16, addr 
 
 		offset := ts + (4 * t.FieldCount)
 		for i := 0; ts < offset; ts += 4 {
+			if len(payload) <= 4 {
+				return errors.New("No payload in template fields")
+			}
 			t.Fields[i] = Field{
 				Type:   uint16(payload[ts])<<8 + uint16(payload[ts+1]),
 				Length: uint16(payload[ts+2])<<8 + uint16(payload[ts+3]),
@@ -140,4 +159,5 @@ func GetTemplates(nf *Netflow, fs *FlowSet, payload []byte, count *uint16, addr 
 		fmt.Println("fields ", t.Fields)
 		fmt.Println("ip: ", ip)
 	}
+	return nil
 }
