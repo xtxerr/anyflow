@@ -145,8 +145,7 @@ type FlowSet struct {
 	Padding  []byte
 }
 type Record struct {
-	Values  []Value
-	Padding []byte
+	Values []Value
 }
 type Value struct {
 	Value       []byte
