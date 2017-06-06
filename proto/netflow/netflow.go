@@ -56,6 +56,7 @@ func Getv9(nf *Netflow, addr *net.UDPAddr, p []byte) error {
 		case fs.Id == 0:
 			err := GetTemplates(nf, fs, payload[4:], &count, addr)
 			if err != nil {
+				fmt.Println(err)
 				return err
 			}
 			payload = payload[fs.Length:]
@@ -64,6 +65,7 @@ func Getv9(nf *Netflow, addr *net.UDPAddr, p []byte) error {
 		case fs.Id > 255:
 			err := Getv9Data(nf, fs, payload[4:], &count, addr)
 			if err != nil {
+				fmt.Println(err)
 				return err
 			}
 			payload = payload[fs.Length:]
@@ -82,35 +84,36 @@ func Getv9Data(nf *Netflow, fs *FlowSet, payload []byte, count *uint16, addr *ne
 	t, ok := TemplateTable[ip][fs.Id]
 	if !ok {
 		return fmt.Errorf(
-			"Haven't seen NF9 template for data flowset from host %v with Id %v yet",
+			"Haven't seen NF9 template for data FlowSet from host %v with Id %v yet",
 			ip, fs.Id)
 	}
 	if len(payload) <= 4 {
-		return errors.New("No payload in data")
+		return errors.New("No payload in data FlowSet")
 	}
 	// byte size of one complete record with all values
-	var rsize int
-	for f := range t.Fields {
+	var rsize uint16
+	for _, f := range t.Fields {
 		rsize += f.Length
 	}
-	// create record slice in FlowSet, amount of records unknown
-	fs.Data = make([]Record)
+	// create a slice of data records
+	fs.Data = make([]Record, nf.Count)
 	// read marker
 	rm := uint16(0)
 	// payload length of data without FlowSet header
 	length := fs.Length - 4
 	// loop through records
 	for rm < length {
-		// check if payload left is large enough for a possible record
 		if rsize <= (length - rm) {
-			// create Record with length of defined types in template
-			r := new(Record)
-			r.Values = make([]Value, len(t.Fields))
-			for f := range t.Fields {
-				v := new(Value)
-				v.Value = payload[rm:f.Length]
-				v.Type = payload[rm:f.Type]
-				v.Length = f.Length
+			// create record with template field amount
+			r := Record{
+				Values: make([]Value, len(t.Fields)),
+			}
+			for _, f := range t.Fields {
+				v := Value{
+					Value:  payload[rm : rm+f.Length-1],
+					Type:   f.Type,
+					Length: f.Length,
+				}
 				// add value to record
 				r.Values = append(r.Values, v)
 				// increase the read marker
@@ -120,10 +123,10 @@ func Getv9Data(nf *Netflow, fs *FlowSet, payload []byte, count *uint16, addr *ne
 			}
 			// add record to FlowSet
 			fs.Data = append(fs.Data, r)
-
 		} else {
 			// useless padding bytes
 			fs.Padding = payload[rm:length]
+			return nil
 		}
 	}
 	return nil
