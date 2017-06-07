@@ -162,3 +162,5 @@ type Field struct {
 	Type   uint16
 	Length uint16
 }
+
+var TemplateTable = make(map[string]map[uint16]*Template)
