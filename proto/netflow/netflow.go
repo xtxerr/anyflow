@@ -22,6 +22,32 @@ func (nf *Netflow) GetDataRecords() ([]Record, error) {
 	return r, nil
 }
 
+func Decimal(b []byte) string {
+
+}
+func IPv4addr(b []byte) string {
+
+}
+func IPv6addr(b []byte) string {
+
+}
+func MAC(b []byte) string {
+
+}
+
+func (v Value) DecodeValue() string {
+
+}
+func (v Value) DecodeType() string {
+
+}
+func (v Value) Length() uint16 {
+
+}
+func (v Value) Descr() string {
+
+}
+
 func New(p []byte, addr *net.UDPAddr) (*Netflow, error) {
 	nf := new(Netflow)
 	version := uint16(p[0])<<8 + uint16(p[1])
@@ -88,6 +114,7 @@ func Getv9(nf *Netflow, addr *net.UDPAddr, p []byte) (*Netflow, error) {
 			payload = payload[fs.Length:]
 			count++
 			fmt.Println("Option template with length: ", fs.Length)
+			continue
 		}
 		// in case the FlowSet Id is not defined here, the packet is complete skipped
 		return nf, errors.New("FlowSet Id unknown")
@@ -119,8 +146,10 @@ func Getv9Data(nf *Netflow, fs *FlowSet, payload []byte, count *uint16, addr *ne
 	rm := uint16(0)
 	// payload length of data without FlowSet header
 	length := fs.Length - 4
+
 	// loop through records
 	for rm < length {
+		fmt.Println("rsize <= length - rm", rsize, length, rm)
 		if rsize <= (length - rm) {
 			// create record with template field amount
 			r := Record{

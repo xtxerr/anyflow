@@ -1,132 +1,139 @@
 package netflow
 
-const (
-	IN_BYTES                     uint16 = 1
-	IN_PKTS                      uint16 = 2
-	FLOWS                        uint16 = 3
-	PROTOCOL                     uint16 = 4
-	SRC_TOS                      uint16 = 5
-	TCP_FLAGS                    uint16 = 6
-	L4_SRC_PORT                  uint16 = 7
-	IPV4_SRC_ADDR                uint16 = 8
-	SRC_MASK                     uint16 = 9
-	INPUT_SNMP                   uint16 = 10
-	L4_DST_PORT                  uint16 = 11
-	IPV4_DST_ADDR                uint16 = 12
-	DST_MASK                     uint16 = 13
-	OUTPUT_SNMP                  uint16 = 14
-	IPV4_NEXT_HOP                uint16 = 15
-	SRC_AS                       uint16 = 16
-	DST_AS                       uint16 = 17
-	BGP_IPV4_NEXT_HOP            uint16 = 18
-	MUL_DST_PKTS                 uint16 = 19
-	MUL_DST_BYTES                uint16 = 20
-	LAST_SWITCHED                uint16 = 21
-	FIRST_SWITCHED               uint16 = 22
-	OUT_BYTES                    uint16 = 23
-	OUT_PKTS                     uint16 = 24
-	MIN_PKT_LNGTH                uint16 = 25
-	MAX_PKT_LNGTH                uint16 = 26
-	IPV6_SRC_ADDR                uint16 = 27
-	IPV6_DST_ADDR                uint16 = 28
-	IPV6_SRC_MASK                uint16 = 29
-	IPV6_DST_MASK                uint16 = 30
-	IPV6_FLOW_LABEL              uint16 = 31
-	ICMP_TYPE                    uint16 = 32
-	MUL_IGMP_TYPE                uint16 = 33
-	SAMPLING_INTERVAL            uint16 = 34
-	SAMPLING_ALGORITHM           uint16 = 35
-	FLOW_ACTIVE_TIMEOUT          uint16 = 36
-	FLOW_INACTIVE_TIMEOUT        uint16 = 37
-	ENGINE_TYPE                  uint16 = 38
-	ENGINE_ID                    uint16 = 39
-	TOTAL_BYTES_EXP              uint16 = 40
-	TOTAL_PKTS_EXP               uint16 = 41
-	TOTAL_FLOWS_EXP              uint16 = 42
-	IPV4_SRC_PREFIX              uint16 = 44
-	IPV4_DST_PREFIX              uint16 = 45
-	MPLS_TOP_LABEL_TYPE          uint16 = 46
-	MPLS_TOP_LABEL_IP_ADDR       uint16 = 47
-	FLOW_SAMPLER_ID              uint16 = 48
-	FLOW_SAMPLER_MODE            uint16 = 49
-	FLOW_SAMPLER_RANDOM_INTERVAL uint16 = 50
-	MIN_TTL                      uint16 = 52
-	MAX_TTL                      uint16 = 53
-	IPV4_IDENT                   uint16 = 54
-	DST_TOS                      uint16 = 55
-	IN_SRC_MAC                   uint16 = 56
-	OUT_DST_MAC                  uint16 = 57
-	SRC_VLAN                     uint16 = 58
-	DST_VLAN                     uint16 = 59
-	IP_PROTOCOL_VERSION          uint16 = 60
-	DIRECTION                    uint16 = 61
-	IPV6_NEXT_HOP                uint16 = 62
-	BPG_IPV6_NEXT_HOP            uint16 = 63
-	IPV6_OPTION_HEADERS          uint16 = 64
-	MPLS_LABEL_1                 uint16 = 70
-	MPLS_LABEL_2                 uint16 = 71
-	MPLS_LABEL_3                 uint16 = 72
-	MPLS_LABEL_4                 uint16 = 73
-	MPLS_LABEL_5                 uint16 = 74
-	MPLS_LABEL_6                 uint16 = 75
-	MPLS_LABEL_7                 uint16 = 76
-	MPLS_LABEL_8                 uint16 = 77
-	MPLS_LABEL_9                 uint16 = 78
-	MPLS_LABEL_10                uint16 = 79
-	IN_DST_MAC                   uint16 = 80
-	OUT_SRC_MAC                  uint16 = 81
-	IF_NAME                      uint16 = 82
-	IF_DESC                      uint16 = 83
-	SAMPLER_NAME                 uint16 = 84
-	IN_PERMANENT_BYTES           uint16 = 85
-	IN_PERMANENT_PKTS            uint16 = 86
-	FRAGMENT_OFFSET              uint16 = 88
-	FORWARDING_STATUS            uint16 = 89
-	MPLS_PAL_RD                  uint16 = 90
-	MPLS_PREFIX_LEN              uint16 = 91
-	SRC_TRAFFIC_INDEX            uint16 = 92
-	DST_TRAFFIC_INDEX            uint16 = 93
-	layer2packetSectionOffset    uint16 = 102
-	layer2packetSectionSize      uint16 = 103
-	layer2packetSectionData      uint16 = 104
-	BGP_ADJ_NEXT_AS              uint16 = 128
-	BGP_ADJ_PREV_AS              uint16 = 129
-	CONN_ID                      uint16 = 148
-	FLOW_CREATE_TIME_MSEC        uint16 = 152
-	FLOW_END_TIME_MSEC           uint16 = 153
-	FWD_FLOW_DELTA_BYTES         uint16 = 231
-	REV_FLOW_DELTA_BYTES         uint16 = 232
-	EVENT_TIME_MSEC              uint16 = 323
-	XLATE_SRC_ADDR_IPV4          uint16 = 225
-	XLATE_DST_ADDR_IPV4          uint16 = 226
-	XLATE_SRC_PORT               uint16 = 227
-	XLATE_DST_PORT               uint16 = 228
-	XLATE_SRC_ADDR_IPV6          uint16 = 281
-	XLATE_DST_ADDR_IPV6          uint16 = 282
-	FW_EVENT                     uint16 = 233
-	NAT_EVENT                    uint16 = 230
-	INGRESS_VRFID                uint16 = 234
-	EGRESS_VRFID                 uint16 = 235
-	XLATE_PORT_BLOCK_START       uint16 = 361
-	XLATE_PORT_BLOCK_END         uint16 = 362
-	XLATE_PORT_BLOCK_STEP        uint16 = 363
-	XLATE_PORT_BLOCK_SIZE        uint16 = 364
-	INGRESS_ACL_ID               uint16 = 33000
-	EGRESS_ACL_ID                uint16 = 33001
-	FW_EXT_EVENT                 uint16 = 33002
-	USERNAME                     uint16 = 40000
-	XLATE_SRC_ADDR_84            uint16 = 40001
-	XLATE_DST_ADDR_84            uint16 = 40002
-	XLATE_SRC_PORT_84            uint16 = 40003
-	XLATE_DST_PORT_84            uint16 = 40004
-	FW_EVENT_84                  uint16 = 40005
-	NPROBE_CLIENT_NW_DELAY_SEC   uint16 = 57554
-	NPROBE_CLIENT_NW_DELAY_USEC  uint16 = 57555
-	NPROBE_SERVER_NW_DELAY_SEC   uint16 = 57556
-	NPROBE_SERVER_NW_DELAY_USEC  uint16 = 57557
-	NPROBE_APPL_LATENCY_SEC      uint16 = 57558
-	NPROBE_APPL_LATENCY_USEC     uint16 = 57559
-)
+type Nf9type struct {
+	Type        string
+	Stringify   func(b []byte) string
+	Length      uint16
+	Description string
+}
+
+var Nf9FieldMap = map[uint16]Nf9type{
+	1:     Nf9type{Type: "IN_BYTES", Stringify: Decimal},
+	2:     Nf9type{Type: "IN_PKTS", Stringify: Decimal},
+	3:     Nf9type{Type: "FLOWS", Stringify: Decimal},
+	4:     Nf9type{Type: "PROTOCOL", Stringify: Decimal},
+	5:     Nf9type{Type: "SRC_TOS", Stringify: Decimal},
+	6:     Nf9type{Type: "TCP_FLAGS", Stringify: Decimal},
+	7:     Nf9type{Type: "L4_SRC_PORT", Stringify: Decimal},
+	8:     Nf9type{Type: "IPV4_SRC_ADDR", Stringify: IPv4addr},
+	9:     Nf9type{Type: "SRC_MASK", Stringify: Decimal},
+	10:    Nf9type{Type: "INPUT_SNMP", Stringify: Decimal},
+	11:    Nf9type{Type: "L4_DST_PORT", Stringify: Decimal},
+	12:    Nf9type{Type: "IPV4_DST_ADDR", Stringify: IPv4addr},
+	13:    Nf9type{Type: "DST_MASK", Stringify: Decimal},
+	14:    Nf9type{Type: "OUTPUT_SNMP", Stringify: Decimal},
+	15:    Nf9type{Type: "IPV4_NEXT_HOP", Stringify: IPv4addr},
+	16:    Nf9type{Type: "SRC_AS", Stringify: Decimal},
+	17:    Nf9type{Type: "DST_AS", Stringify: Decimal},
+	18:    Nf9type{Type: "BGP_IPV4_NEXT_HOP", Stringify: IPv4addr},
+	19:    Nf9type{Type: "MUL_DST_PKTS", Stringify: Decimal},
+	20:    Nf9type{Type: "MUL_DST_BYTES", Stringify: Decimal},
+	21:    Nf9type{Type: "LAST_SWITCHED", Stringify: Decimal},
+	22:    Nf9type{Type: "FIRST_SWITCHED", Stringify: Decimal},
+	23:    Nf9type{Type: "OUT_BYTES", Stringify: Decimal},
+	24:    Nf9type{Type: "OUT_PKTS", Stringify: Decimal},
+	25:    Nf9type{Type: "MIN_PKT_LNGTH", Stringify: Decimal},
+	26:    Nf9type{Type: "MAX_PKT_LNGTH", Stringify: Decimal},
+	27:    Nf9type{Type: "IPV6_SRC_ADDR", Stringify: IPv6addr},
+	28:    Nf9type{Type: "IPV6_DST_ADDR", Stringify: IPv6addr},
+	29:    Nf9type{Type: "IPV6_SRC_MASK", Stringify: IPv6addr},
+	30:    Nf9type{Type: "IPV6_DST_MASK", Stringify: IPv6addr},
+	31:    Nf9type{Type: "IPV6_FLOW_LABEL", Stringify: Decimal},
+	32:    Nf9type{Type: "ICMP_TYPE", Stringify: Decimal},
+	33:    Nf9type{Type: "MUL_IGMP_TYPE", Stringify: Decimal},
+	34:    Nf9type{Type: "SAMPLING_INTERVAL", Stringify: Decimal},
+	35:    Nf9type{Type: "SAMPLING_ALGORITHM", Stringify: Decimal},
+	36:    Nf9type{Type: "FLOW_ACTIVE_TIMEOUT", Stringify: Decimal},
+	37:    Nf9type{Type: "FLOW_INACTIVE_TIMEOUT", Stringify: Decimal},
+	38:    Nf9type{Type: "ENGINE_TYPE", Stringify: Decimal},
+	39:    Nf9type{Type: "ENGINE_ID", Stringify: Decimal},
+	40:    Nf9type{Type: "TOTAL_BYTES_EXP", Stringify: Decimal},
+	41:    Nf9type{Type: "TOTAL_PKTS_EXP", Stringify: Decimal},
+	42:    Nf9type{Type: "TOTAL_FLOWS_EXP", Stringify: Decimal},
+	44:    Nf9type{Type: "IPV4_SRC_PREFIX", Stringify: IPv4addr},
+	45:    Nf9type{Type: "IPV4_DST_PREFIX", Stringify: IPv4addr},
+	46:    Nf9type{Type: "MPLS_TOP_LABEL_TYPE", Stringify: Decimal},
+	47:    Nf9type{Type: "MPLS_TOP_LABEL_IP_ADDR", Stringify: Decimal},
+	48:    Nf9type{Type: "FLOW_SAMPLER_ID", Stringify: Decimal},
+	49:    Nf9type{Type: "FLOW_SAMPLER_MODE", Stringify: Decimal},
+	50:    Nf9type{Type: "FLOW_SAMPLER_RANDOM_INTERVAL", Stringify: Decimal},
+	52:    Nf9type{Type: "MIN_TTL", Stringify: Decimal},
+	53:    Nf9type{Type: "MAX_TTL", Stringify: Decimal},
+	54:    Nf9type{Type: "IPV4_IDENT", Stringify: IPv4addr},
+	55:    Nf9type{Type: "DST_TOS", Stringify: Decimal},
+	56:    Nf9type{Type: "IN_SRC_MAC", Stringify: MAC},
+	57:    Nf9type{Type: "OUT_DST_MAC", Stringify: MAC},
+	58:    Nf9type{Type: "SRC_VLAN", Stringify: Decimal},
+	59:    Nf9type{Type: "DST_VLAN", Stringify: Decimal},
+	60:    Nf9type{Type: "IP_PROTOCOL_VERSION", Stringify: Decimal},
+	61:    Nf9type{Type: "DIRECTION", Stringify: Decimal},
+	62:    Nf9type{Type: "IPV6_NEXT_HOP"},
+	63:    Nf9type{Type: "BPG_IPV6_NEXT_HOP"},
+	64:    Nf9type{Type: "IPV6_OPTION_HEADERS"},
+	70:    Nf9type{Type: "MPLS_LABEL_1"},
+	71:    Nf9type{Type: "MPLS_LABEL_2"},
+	72:    Nf9type{Type: "MPLS_LABEL_3"},
+	73:    Nf9type{Type: "MPLS_LABEL_4"},
+	74:    Nf9type{Type: "MPLS_LABEL_5"},
+	75:    Nf9type{Type: "MPLS_LABEL_6"},
+	76:    Nf9type{Type: "MPLS_LABEL_7"},
+	77:    Nf9type{Type: "MPLS_LABEL_8"},
+	78:    Nf9type{Type: "MPLS_LABEL_9"},
+	79:    Nf9type{Type: "MPLS_LABEL_10"},
+	80:    Nf9type{Type: "IN_DST_MAC"},
+	81:    Nf9type{Type: "OUT_SRC_MAC"},
+	82:    Nf9type{Type: "IF_NAME"},
+	83:    Nf9type{Type: "IF_DESC"},
+	84:    Nf9type{Type: "SAMPLER_NAME"},
+	85:    Nf9type{Type: "IN_PERMANENT_BYTES"},
+	86:    Nf9type{Type: "IN_PERMANENT_PKTS"},
+	88:    Nf9type{Type: "FRAGMENT_OFFSET"},
+	89:    Nf9type{Type: "FORWARDING_STATUS"},
+	90:    Nf9type{Type: "MPLS_PAL_RD"},
+	91:    Nf9type{Type: "MPLS_PREFIX_LEN"},
+	92:    Nf9type{Type: "SRC_TRAFFIC_INDEX"},
+	93:    Nf9type{Type: "DST_TRAFFIC_INDEX"},
+	102:   Nf9type{Type: "layer2packetSectionOffset"},
+	103:   Nf9type{Type: "layer2packetSectionSize"},
+	104:   Nf9type{Type: "layer2packetSectionData"},
+	128:   Nf9type{Type: "BGP_ADJ_NEXT_AS"},
+	129:   Nf9type{Type: "BGP_ADJ_PREV_AS"},
+	148:   Nf9type{Type: "CONN_ID"},
+	152:   Nf9type{Type: "FLOW_CREATE_TIME_MSEC"},
+	153:   Nf9type{Type: "FLOW_END_TIME_MSEC"},
+	231:   Nf9type{Type: "FWD_FLOW_DELTA_BYTES"},
+	232:   Nf9type{Type: "REV_FLOW_DELTA_BYTES"},
+	323:   Nf9type{Type: "EVENT_TIME_MSEC"},
+	225:   Nf9type{Type: "XLATE_SRC_ADDR_IPV4"},
+	226:   Nf9type{Type: "XLATE_DST_ADDR_IPV4"},
+	227:   Nf9type{Type: "XLATE_SRC_PORT"},
+	228:   Nf9type{Type: "XLATE_DST_PORT"},
+	281:   Nf9type{Type: "XLATE_SRC_ADDR_IPV6"},
+	282:   Nf9type{Type: "XLATE_DST_ADDR_IPV6"},
+	233:   Nf9type{Type: "FW_EVENT"},
+	230:   Nf9type{Type: "NAT_EVENT"},
+	234:   Nf9type{Type: "INGRESS_VRFID"},
+	235:   Nf9type{Type: "EGRESS_VRFID"},
+	361:   Nf9type{Type: "XLATE_PORT_BLOCK_START"},
+	362:   Nf9type{Type: "XLATE_PORT_BLOCK_END"},
+	363:   Nf9type{Type: "XLATE_PORT_BLOCK_STEP"},
+	364:   Nf9type{Type: "XLATE_PORT_BLOCK_SIZE"},
+	33000: Nf9type{Type: "INGRESS_ACL_ID"},
+	33001: Nf9type{Type: "EGRESS_ACL_ID"},
+	33002: Nf9type{Type: "FW_EXT_EVENT"},
+	40000: Nf9type{Type: "USERNAME"},
+	40001: Nf9type{Type: "XLATE_SRC_ADDR_84"},
+	40002: Nf9type{Type: "XLATE_DST_ADDR_84"},
+	40003: Nf9type{Type: "XLATE_SRC_PORT_84"},
+	40004: Nf9type{Type: "XLATE_DST_PORT_84"},
+	40005: Nf9type{Type: "FW_EVENT_84"},
+	57554: Nf9type{Type: "NPROBE_CLIENT_NW_DELAY_SEC"},
+	57555: Nf9type{Type: "NPROBE_CLIENT_NW_DELAY_USEC"},
+	57556: Nf9type{Type: "NPROBE_SERVER_NW_DELAY_SEC"},
+	57557: Nf9type{Type: "NPROBE_SERVER_NW_DELAY_USEC"},
+	57558: Nf9type{Type: "NPROBE_APPL_LATENCY_SEC"},
+	57559: Nf9type{Type: "NPROBE_APPL_LATENCY_USEC"},
+}
 
 type Netflow struct {
 	Version   uint16
