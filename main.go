@@ -58,8 +58,8 @@ func main() {
 			switch p.Proto {
 			// netflow v9 packet processing
 			case "nf9":
-				//nf, err := netflow.New(p.Raw, p.Saddr)
-				netflow.New(p.Raw, p.Saddr)
+				nf, err := netflow.New(p.Raw, p.Saddr)
+				//netflow.New(p.Raw, p.Saddr)
 
 				// Debugging
 				//fmt.Printf("Proto: %v\nSaddr: %v\nVersion: %v\nCount: %v\nUptime: %v\n"+
@@ -75,7 +75,21 @@ func main() {
 
 				if err == nil {
 					//spew.Dump(nf)
+
 					//fmt.Println("------------------------------------------------------")
+					//fmt.Println("Host :", addr.IP.String())
+
+					//records, err := nf.GetDataRecords()
+					nf.GetDataRecords()
+
+					if err == nil {
+						//	for i, r := range records {
+						//		fmt.Println("record no: ", i)
+						//		fmt.Println("record value: ", r)
+						//	}
+					} else {
+						fmt.Println("Error: ", err)
+					}
 				} else {
 					fmt.Println("Error: ", err)
 				}

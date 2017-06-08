@@ -6,6 +6,22 @@ import (
 	"net"
 )
 
+func (nf *Netflow) GetDataRecords() ([]Record, error) {
+	r := make([]Record, nf.Count)
+	if len(nf.FlowSet) == 0 {
+		return r, errors.New("No FlowSets")
+	}
+	for _, fs := range nf.FlowSet {
+		if len(fs.Data) == 0 {
+			return r, errors.New("No data FlowSets")
+		}
+		for _, d := range fs.Data {
+			r = append(r, d)
+		}
+	}
+	return r, nil
+}
+
 func New(p []byte, addr *net.UDPAddr) (*Netflow, error) {
 	nf := new(Netflow)
 	version := uint16(p[0])<<8 + uint16(p[1])
@@ -61,6 +77,7 @@ func Getv9(nf *Netflow, addr *net.UDPAddr, p []byte) (*Netflow, error) {
 		case fs.Id > 255:
 			err := Getv9Data(nf, fs, payload[4:], &count, addr)
 			if err != nil {
+				fmt.Println(err)
 				return nf, err
 			}
 			nf.FlowSet = append(nf.FlowSet, *fs)
