@@ -4,6 +4,7 @@ import (
 	"errors"
 	"fmt"
 	"net"
+	"strconv"
 
 	"github.com/davecgh/go-spew/spew"
 )
@@ -36,21 +37,41 @@ func (nf *Netflow) HasFlows() bool {
 	return false
 }
 
-func Decimal(b []byte) string {
-
-	return ""
+func BytesToUint64(s []byte) uint64 {
+	// big endian shifting
+	var a uint64
+	l := len(s)
+	for i, b := range s {
+		shift := uint64((l - i - 1) * 8)
+		a |= uint64(b) << shift
+	}
+	return a
 }
-func IPv4addr(b []byte) string {
-
-	return ""
+func BytesToNumber(b []byte) string {
+	i := BytesToUint64(b)
+	s := strconv.FormatUint(i, 10)
+	return s
 }
-func IPv6addr(b []byte) string {
-
-	return ""
+func BytesToString(b []byte) string {
+	return string(b)
 }
-func MAC(b []byte) string {
-
-	return ""
+func BytesToIpv4(ip []byte) string {
+	if len(ip) != 4 {
+		return "<nil>"
+	}
+	return strconv.Itoa(int(ip[0])) + "." +
+		strconv.Itoa(int(ip[1])) + "." +
+		strconv.Itoa(int(ip[2])) + "." +
+		strconv.Itoa(int(ip[3]))
+}
+func BytesToIpv6(ip []byte) string {
+	if len(ip) != 16 {
+		return "<nil>"
+	}
+	return "SOME IPV6"
+}
+func BytesToMac(b []byte) string {
+	return "SOME MAC"
 }
 
 func (v Value) GetType() string {
@@ -60,16 +81,25 @@ func (v Value) GetType() string {
 	if t, ok := Nf9FieldMap[v.Type]; ok {
 		return t.Type
 	} else {
-		return fmt.Sprint("value type ", v.Type, " is not known")
+		return fmt.Sprint("value type ", v.Type, " is unknown")
 	}
 }
 
 func (v Value) GetValue() string {
-	return ""
+	if v.Type == 0 {
+		return "value has no type"
+	}
+	if t, ok := Nf9FieldMap[v.Type]; ok {
+		s := t.Stringify(v.Value)
+		return s
+	}
+	return fmt.Sprint("value type ", v.Type, " is unknown")
 }
+
 func (v Value) GetLength() string {
 	return ""
 }
+
 func (v Value) GetDesc() string {
 	return ""
 }
@@ -87,20 +117,15 @@ func New(p []byte, addr *net.UDPAddr) (*Netflow, error) {
 }
 
 func Getv9(nf *Netflow, addr *net.UDPAddr, p []byte) (*Netflow, error) {
-	// version
+	// parse netflow header
 	nf.Version = uint16(p[0])<<8 + uint16(p[1])
-	// count
 	nf.Count = uint16(p[2])<<8 + uint16(p[3])
-	// sysuptime
 	nf.SysUptime = uint32(p[4])<<24 + uint32(p[5])<<16 +
 		uint32(p[6])<<8 + uint32(p[7])
-	// unixsecs
 	nf.UnixSecs = uint32(p[8])<<24 + uint32(p[9])<<16 +
 		uint32(p[10])<<8 + uint32(p[11])
-	// sequence number
 	nf.Sequence = uint32(p[12])<<24 + uint32(p[13])<<16 +
 		uint32(p[14])<<8 + uint32(p[15])
-	// sourceid
 	nf.SourceId = uint32(p[16])<<24 + uint32(p[17])<<16 +
 		uint32(p[18])<<8 + uint32(p[19])
 

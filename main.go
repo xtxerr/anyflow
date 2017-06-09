@@ -87,6 +87,7 @@ func main() {
 
 					_ = v.GetValue()
 
+					fmt.Println(v.GetType())
 				}
 			}
 		}
