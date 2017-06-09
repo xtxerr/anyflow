@@ -1,17 +1,14 @@
 package main
 
 import "fmt"
-
-//var slice = make([]string, 100)
-var slice [100]string
+import "strconv"
 
 func main() {
-	slice[2] = "foo"
-	slice[10] = "foo"
 
-	for a, b := range slice {
+	a := 2048
 
-		fmt.Println(a, "=>", b)
+	b := strconv.Itoa(a)
 
-	}
+	fmt.Println("len of b:=strconv.Itoa(a) is ", len(b))
+
 }

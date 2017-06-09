@@ -54,44 +54,37 @@ func main() {
 
 		p, err := Parse(buf[:n], addr)
 
-		if err == nil {
-			switch p.Proto {
-			// netflow v9 packet processing
-			case "nf9":
-				nf, err := netflow.New(p.Raw, p.Saddr)
-				//netflow.New(p.Raw, p.Saddr)
+		if err != nil {
+			fmt.Println("Error: ", err)
+			continue
+		}
 
-				// Debugging
-				//fmt.Printf("Proto: %v\nSaddr: %v\nVersion: %v\nCount: %v\nUptime: %v\n"+
-				//	"UnixSecs: %v\nSequence: %v\nSourceId: %v\n\n",
-				//	p.Proto, p.Saddr, nf.Version, nf.Count, nf.SysUptime,
-				//	nf.UnixSecs, nf.Sequence, nf.SourceId)
-				//fmt.Printf("FlowSet ID: %v\nFlowSet length: %v\nTemplate ID: %v\n"+
-				//	"Template Count: %v\n-------\n",
-				//	nf.FlowSet.Id, nf.FlowSet.Length, nf.Template.Id,
-				//	nf.Template.FieldCount)
+		switch p.Proto {
 
-				//spew.Dump(netflow.TemplateTable)
+		case "nf9":
+			nf, err := netflow.New(p.Raw, p.Saddr)
 
-				if err == nil {
-					//spew.Dump(nf)
+			if err != nil {
+				fmt.Println("Error: ", err)
+				continue
+			}
+			//spew.Dump(nf)
+			//fmt.Println("------------------------------------------------------")
+			//fmt.Println("Host :", addr.IP.String())
+			records, err := nf.GetFlows()
 
-					//fmt.Println("------------------------------------------------------")
-					//fmt.Println("Host :", addr.IP.String())
+			if err != nil {
+				fmt.Println("Error: ", err)
+				continue
+			}
 
-					//records, err := nf.GetDataRecords()
-					nf.GetDataRecords()
+			for _, r := range records {
 
-					if err == nil {
-						//	for i, r := range records {
-						//		fmt.Println("record no: ", i)
-						//		fmt.Println("record value: ", r)
-						//	}
-					} else {
-						fmt.Println("Error: ", err)
-					}
-				} else {
-					fmt.Println("Error: ", err)
+				for _, v := range r.Values {
+
+					//fmt.Println(v.GetValue())
+					_ = v.GetValue()
+
 				}
 			}
 		}

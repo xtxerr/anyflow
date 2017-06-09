@@ -4,11 +4,14 @@ import (
 	"errors"
 	"fmt"
 	"net"
+
+	"github.com/davecgh/go-spew/spew"
 )
 
-func (nf *Netflow) GetDataRecords() ([]Record, error) {
+func (nf *Netflow) GetFlows() ([]Record, error) {
 	r := make([]Record, nf.Count)
 	if len(nf.FlowSet) == 0 {
+		spew.Dump(nf)
 		return r, errors.New("No FlowSets")
 	}
 	for _, fs := range nf.FlowSet {
@@ -22,30 +25,53 @@ func (nf *Netflow) GetDataRecords() ([]Record, error) {
 	return r, nil
 }
 
+func (nf *Netflow) HasFlows() bool {
+	if len(nf.FlowSet) != 0 {
+		for _, fs := range nf.FlowSet {
+			if len(fs.Data) != 0 {
+				return true
+			}
+		}
+	}
+	return false
+}
+
 func Decimal(b []byte) string {
 
+	return ""
 }
 func IPv4addr(b []byte) string {
 
+	return ""
 }
 func IPv6addr(b []byte) string {
 
+	return ""
 }
 func MAC(b []byte) string {
 
+	return ""
 }
 
-func (v Value) DecodeValue() string {
-
+func (v Value) GetType() string {
+	if v.Type == 0 {
+		return "value has no type"
+	}
+	if t, ok := Nf9FieldMap[v.Type]; ok {
+		return t.Type
+	} else {
+		return fmt.Sprint("value type ", v.Type, " is not known")
+	}
 }
-func (v Value) DecodeType() string {
 
+func (v Value) GetValue() string {
+	return ""
 }
-func (v Value) Length() uint16 {
-
+func (v Value) GetLength() string {
+	return ""
 }
-func (v Value) Descr() string {
-
+func (v Value) GetDesc() string {
+	return ""
 }
 
 func New(p []byte, addr *net.UDPAddr) (*Netflow, error) {
@@ -97,13 +123,14 @@ func Getv9(nf *Netflow, addr *net.UDPAddr, p []byte) (*Netflow, error) {
 			if err != nil {
 				return nf, err
 			}
+			//
+			nf.FlowSet = append(nf.FlowSet, *fs)
 			payload = payload[fs.Length:]
 			continue
 		// Data FlowSet Id
 		case fs.Id > 255:
 			err := Getv9Data(nf, fs, payload[4:], &count, addr)
 			if err != nil {
-				fmt.Println(err)
 				return nf, err
 			}
 			nf.FlowSet = append(nf.FlowSet, *fs)
@@ -111,12 +138,15 @@ func Getv9(nf *Netflow, addr *net.UDPAddr, p []byte) (*Netflow, error) {
 			continue
 		// Option FlowSet Id
 		case fs.Id == 1:
+			// for now add empty Option FlowSet
+			nf.FlowSet = append(nf.FlowSet, *fs)
 			payload = payload[fs.Length:]
 			count++
 			fmt.Println("Option template with length: ", fs.Length)
 			continue
 		}
-		// in case the FlowSet Id is not defined here, the packet is complete skipped
+		// in case the FlowSet Id is unknown for us, add an empty one and skip the packet
+		nf.FlowSet = append(nf.FlowSet, *fs)
 		return nf, errors.New("FlowSet Id unknown")
 	}
 	return nf, nil
@@ -149,7 +179,6 @@ func Getv9Data(nf *Netflow, fs *FlowSet, payload []byte, count *uint16, addr *ne
 
 	// loop through records
 	for rm < length {
-		fmt.Println("rsize <= length - rm", rsize, length, rm)
 		if rsize <= (length - rm) {
 			// create record with template field amount
 			r := Record{
@@ -218,6 +247,8 @@ func GetTemplates(nf *Netflow, fs *FlowSet, payload []byte, count *uint16, addr 
 		}
 		// record counter
 		*count++
+		// attach template to FlowSet
+		fs.Template = append(fs.Template, *t)
 	}
 	return nil
 }
