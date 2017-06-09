@@ -47,6 +47,7 @@ func main() {
 
 	for {
 		n, addr, err := ServerConn.ReadFromUDP(buf)
+		//fmt.Println("Host :", addr.IP.String())
 
 		if err != nil {
 			fmt.Println("Error: ", err)
@@ -68,9 +69,11 @@ func main() {
 				fmt.Println("Error: ", err)
 				continue
 			}
-			//spew.Dump(nf)
-			//fmt.Println("------------------------------------------------------")
-			//fmt.Println("Host :", addr.IP.String())
+
+			if !nf.HasFlows() {
+				continue
+			}
+
 			records, err := nf.GetFlows()
 
 			if err != nil {
@@ -82,7 +85,6 @@ func main() {
 
 				for _, v := range r.Values {
 
-					//fmt.Println(v.GetValue())
 					_ = v.GetValue()
 
 				}
