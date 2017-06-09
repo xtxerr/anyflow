@@ -1,5 +1,5 @@
 # anyflow
-Netflow and IPFIX collector and exporter written in Golang
+Netflow and IPFIX collector, written in Golang.
 
 
 
