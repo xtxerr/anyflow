@@ -5,23 +5,22 @@ import (
 	"fmt"
 	"net"
 	"strconv"
-
-	"github.com/davecgh/go-spew/spew"
 )
 
 func (nf *Netflow) GetFlows() ([]Record, error) {
 	r := make([]Record, nf.Count)
 	if len(nf.FlowSet) == 0 {
-		spew.Dump(nf)
 		return r, errors.New("No FlowSets")
 	}
 	for _, fs := range nf.FlowSet {
-		if len(fs.Data) == 0 {
-			return r, errors.New("No data FlowSets")
+		if len(fs.Data) != 0 {
+			for _, d := range fs.Data {
+				r = append(r, d)
+			}
 		}
-		for _, d := range fs.Data {
-			r = append(r, d)
-		}
+	}
+	if len(r) == 0 {
+		return r, errors.New("No data FlowSets")
 	}
 	return r, nil
 }
@@ -86,8 +85,11 @@ func (v Value) GetType() string {
 }
 
 func (v Value) GetValue() string {
+	if len(v.Value) < 1 {
+		return "no value attached"
+	}
 	if v.Type == 0 {
-		return "value has no type"
+		return "value is of no type"
 	}
 	if t, ok := Nf9FieldMap[v.Type]; ok {
 		s := t.Stringify(v.Value)

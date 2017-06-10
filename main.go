@@ -85,7 +85,7 @@ func main() {
 
 				for _, v := range r.Values {
 
-					_ = v.GetValue()
+					fmt.Println(v.GetValue())
 
 					fmt.Println(v.GetType())
 				}
