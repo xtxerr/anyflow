@@ -49,6 +49,12 @@ func main() {
 		n, addr, err := ServerConn.ReadFromUDP(buf)
 		//fmt.Println("Host :", addr.IP.String())
 
+		fmt.Println("")
+		fmt.Println("+---------------------------------------+")
+		fmt.Println("|               NEW PACKET              |")
+		fmt.Println("+---------------------------------------+")
+		fmt.Println("|Packet Source: ", addr.IP.String())
+
 		if err != nil {
 			fmt.Println("Error: ", err)
 		}
@@ -76,19 +82,29 @@ func main() {
 
 			records, err := nf.GetFlows()
 
+			fmt.Println("Data Record length: ", len(records))
+
 			if err != nil {
 				fmt.Println("Error: ", err)
 				continue
 			}
 
+			i := 1
+
 			for _, r := range records {
+
+				fmt.Println("---------------------")
+				fmt.Println("Flow/Record: ", i)
+				fmt.Println("---------------------")
 
 				for _, v := range r.Values {
 
-					fmt.Println(v.GetValue())
+					fmt.Printf("%v: %v\n", v.GetType(), v.GetValue())
 
-					fmt.Println(v.GetType())
 				}
+
+				fmt.Println("")
+				i++
 			}
 		}
 	}

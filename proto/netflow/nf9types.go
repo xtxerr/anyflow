@@ -53,7 +53,7 @@ var Nf9FieldMap = map[uint16]Nf9type{
 	44:  Nf9type{Type: "IPV4_SRC_PREFIX", Stringify: BytesToIpv4},
 	45:  Nf9type{Type: "IPV4_DST_PREFIX", Stringify: BytesToIpv4},
 	46:  Nf9type{Type: "MPLS_TOP_LABEL_TYPE", Stringify: BytesToNumber},
-	47:  Nf9type{Type: "MPLS_TOP_LABEL_IP_ADDR", Stringify: BytesToNumber},
+	47:  Nf9type{Type: "MPLS_TOP_LABEL_IP_ADDR", Stringify: BytesToIpv4},
 	48:  Nf9type{Type: "FLOW_SAMPLER_ID", Stringify: BytesToNumber},
 	49:  Nf9type{Type: "FLOW_SAMPLER_MODE", Stringify: BytesToNumber},
 	50:  Nf9type{Type: "FLOW_SAMPLER_RANDOM_INTERVAL", Stringify: BytesToNumber},
