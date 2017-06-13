@@ -1,7 +1,9 @@
 # anyflow
 Netflow and IPFIX collector, written in Golang.
 
+## Building
 
+   go build
 
 # License and Copyright
 
