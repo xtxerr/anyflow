@@ -4,6 +4,7 @@ import (
 	"errors"
 	"fmt"
 	"net"
+	"net/http"
 	"os"
 
 	"github.com/jesk78/anyflow/proto/netflow"
@@ -39,7 +40,7 @@ func receivePackets(c *UDPConn) {
 	buf := make([]byte, 9000)
 
 	for {
-		n, addr, err := ServerConn.ReadFromUDP(buf)
+		n, addr, err := c.ReadFromUDP(buf)
 		packetSourceIP := addr.IP.String()
 		//fmt.Println("Host :", addr.IP.String())
 

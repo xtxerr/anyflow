@@ -210,7 +210,7 @@ func GetOptionsTemplates(nf *Netflow, fs *FlowSet, payload []byte, count *uint16
 
 		t.Id = uint16(payload[rm+0])<<8 + uint16(payload[rm+1])
 		if t.Id < 256 {
-			return fmt.Error("option-template ID received from host %v with ID %v"+
+			return fmt.Errorf("option-template ID received from host %v with ID %v"+
 				"is not a valid option-template ID"+
 				", it must be greater 255.", ip, t.Id)
 		}
