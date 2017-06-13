@@ -146,9 +146,11 @@ type Value struct {
 	Description string
 }
 type Template struct {
-	Id         uint16
-	FieldCount uint16
-	Fields     []Field
+	Id           uint16
+	FieldCount   uint16
+	Fields       []Field
+	ScopeLength  uint16
+	OptionLength uint16
 }
 type Field struct {
 	Type   uint16
