@@ -36,7 +36,7 @@ func Parse(b []byte, addr *net.UDPAddr) (*Packet, error) {
 	return p, nil
 }
 
-func receivePackets(c *UDPConn) {
+func receivePackets(c *net.UDPConn) {
 	buf := make([]byte, 9000)
 
 	for {
