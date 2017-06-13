@@ -3,6 +3,12 @@
 	"ignore": "test",
 	"package": [
 		{
+			"checksumSHA1": "m+iiamnbukzE8kFPfBche6D0FmQ=",
+			"path": "github.com/Sirupsen/logrus",
+			"revision": "5b60b3d3ee017ed00bcd0225fcca7acab767844b",
+			"revisionTime": "2017-05-04T07:10:19Z"
+		},
+		{
 			"checksumSHA1": "spyv5/YFBjYyZLZa1U2LBfDR8PM=",
 			"path": "github.com/beorn7/perks/quantile",
 			"revision": "4c0e84591b9aa9e6dcfdf3e020114cd81f89d5f9",
@@ -61,6 +67,12 @@
 			"path": "github.com/prometheus/procfs/xfs",
 			"revision": "65c1f6f8f0fc1e2185eb9863a3bc751496404259",
 			"revisionTime": "2017-05-19T19:08:37Z"
+		},
+		{
+			"checksumSHA1": "PugQbLLjnbBSj+NOXRYBVRnLuuQ=",
+			"path": "golang.org/x/sys/unix",
+			"revision": "b90f89a1e7a9c1f6b918820b3daa7f08488c8594",
+			"revisionTime": "2017-05-29T13:44:53Z"
 		}
 	],
 	"rootPath": "github.com/superq/anyflow"

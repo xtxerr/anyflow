@@ -7,6 +7,8 @@ import (
 	"net/http"
 	"os"
 
+	log "github.com/Sirupsen/logrus"
+
 	"github.com/jesk78/anyflow/proto/netflow"
 	"github.com/prometheus/client_golang/prometheus"
 )
@@ -19,7 +21,7 @@ type Packet struct {
 
 func CheckError(err error) {
 	if err != nil {
-		fmt.Println("Error: ", err)
+		log.Fatalf("Error: ", err)
 		os.Exit(0)
 	}
 }
@@ -36,80 +38,70 @@ func Parse(b []byte, addr *net.UDPAddr) (*Packet, error) {
 	return p, nil
 }
 
-func receivePackets(c *UDPConn) {
+func receivePackets(c *net.UDPConn) {
 	buf := make([]byte, 9000)
 
 	for {
 		n, addr, err := c.ReadFromUDP(buf)
-		packetSourceIP := addr.IP.String()
-		//fmt.Println("Host :", addr.IP.String())
-
-		fmt.Println("")
-		fmt.Println("+---------------------------------------+")
-		fmt.Println("|               NEW PACKET              |")
-		fmt.Println("+---------------------------------------+")
-		fmt.Println("|Packet Source: ", packetSourceIP)
-
 		if err != nil {
-			fmt.Println("Error: ", err)
+			log.Errorf("Error: ", err)
+			continue
 		}
+
+		packetSourceIP := addr.IP.String()
 		packetsTotal.WithLabelValues(packetSourceIP).Inc()
+		log.Infof("Packet source: ", packetSourceIP)
 
 		p, err := Parse(buf[:n], addr)
-
 		if err != nil {
-			fmt.Println("Error: ", err)
+			log.Errorf("Error parsing packet: ", err)
 			continue
 		}
 
 		switch p.Proto {
-
 		case "nf9":
 			nf, err := netflow.New(p.Raw, p.Saddr)
-
 			if err != nil {
-				fmt.Println("Error: ", err)
+				log.Errorf("Error parsing netflow nf9 packet: ", err)
 				continue
 			}
 
 			if !nf.HasFlows() {
+				log.Debug("No flows in nf9 packet")
 				continue
 			}
 
 			records, err := nf.GetFlows()
-
-			fmt.Println("Data Record length: ", len(records))
-
 			if err != nil {
-				fmt.Println("Error: ", err)
+				log.Errorf("Error getting flows from packet: ", err)
 				continue
 			}
 
-			i := 1
+			log.Infof("Number of flow packet records: ", len(records))
 
-			for _, r := range records {
-				fmt.Println("---------------------")
-				fmt.Println("Flow/Record: ", i)
-				fmt.Println("---------------------")
-
+			for i, r := range records {
 				for _, v := range r.Values {
-					fmt.Printf("%v: %v\n", v.GetType(), v.GetValue())
+					log.Infof("Flow record: %d type: %v value: %v", i, v.GetType(), v.GetValue())
 				}
-
-				fmt.Println("")
-				i++
 			}
 		}
 	}
 }
 
 func init() {
+	log.SetFormatter(&log.TextFormatter{})
+	log.SetOutput(os.Stdout)
+	log.SetLevel(log.DebugLevel)
+
 	prometheus.MustRegister(packetsTotal)
 }
 
 func main() {
-	listenAddress := ":8080"
-	ServerAddr, err := net.ResolveUDPAddr("udp", ":10001")
+	httpListenAddress := ":8080"
+	flowListenAddress := ":10001"
+
+	log.Infof("Flow listening on %s", flowListenAddress)
+	ServerAddr, err := net.ResolveUDPAddr("udp", flowListenAddress)
 	CheckError(err)
 
 	ServerConn, err := net.ListenUDP("udp", ServerAddr)
@@ -130,8 +122,8 @@ func main() {
             </html>`))
 	})
 
-	fmt.Printf("Listening on %s\n", listenAddress)
-	if err := http.ListenAndServe(listenAddress, nil); err != nil {
+	log.Infof("HTTP listening on %s", httpListenAddress)
+	if err := http.ListenAndServe(httpListenAddress, nil); err != nil {
 		panic(fmt.Errorf("Error starting HTTP server: %s", err))
 	}
 }
